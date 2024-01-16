@@ -49,6 +49,7 @@ class Rope(object):
             r.right = other
             r.length = self.length + other.length
             r.current = self
+            r.balance()
             return r
         else:
             try:
@@ -62,9 +63,22 @@ class Rope(object):
             return len(self.left) + len(self.right)
         else:
             return(len(self.data))
+        
+    def _height(self):
+        if self.left is not None and self.right is not None:
+            return 1 + max(self.left._height(), self.right._height())
+        else:
+            return 0
+        
+    def _is_balanced(self):
+        if self.left is not None and self.right is not None:
+            if abs(self.left._height() - self.right._height()) > 1:
+                return False
+            return self.left._is_balanced() and self.right._is_balanced()
+        else:
+            return True
 
     def __getitem__(self, index):
-        
         if isinstance(index, int):
             if self.left and self.right:
                 if index < -self.right.length:
@@ -79,94 +93,12 @@ class Rope(object):
                 else:
                     return self.right[subindex]
             else:
-                return Rope(self.data[index])
-
-        elif isinstance(index, slice):
-            if self.left and self.right:
-                start = index.start
-                if index.start is None:
-                    if index.step is None or index.step > 0:
-                        head = self.left
-                    else:
-                        head = self.right
-                elif (index.start < -self.right.length or
-                        0 <= index.start < self.left.length):
-                    head = self.left
-                    if index.start and index.start < -self.right.length:
-                        start += self.right.length
-                else:
-                    head = self.right
-                    if index.start and index.start >= self.left.length:
-                        start -= self.left.length
-
-                # TODO: stop = -right.length could be on either subrope.
-                # There are two options:
-                #   1. tail = left and stop = None (or left.length)
-                #   2. tail = right as a '' string, which is removed
-                # Currently doing method 2, but I'm on the fence here.
-                stop = index.stop
-                if index.step is None or index.step > 0:
-                    if (index.stop is None or
-                            -self.right.length <= index.stop < 0 or
-                            index.stop > self.left.length):
-                        tail = self.right
-                        if index.stop and index.stop > self.left.length:
-                            stop -= self.left.length
-                    else:
-                        if head == self.right:
-                            tail = self.right
-                            stop = 0
-                        else:
-                            tail = self.left
-                            if index.stop < -self.right.length:
-                                stop += self.right.length
-                else:
-                    if (index.stop is None or
-                            index.stop < (-self.right.length - 1) or
-                            0 <= index.stop < self.left.length):
-                        tail = self.left
-                        if index.stop and index.stop < (-self.right.length - 1):
-                            stop += self.right.length
-                    else:
-                        if head == self.left:
-                            tail = self.left
-                            stop = -1   # Or self.left.length - 1 ?
-                        else:
-                            tail = self.right
-                            if index.stop >= self.left.length:
-                                stop -= self.left.length
-
-                # Construct the rope
-                if head == tail:
-                    return head[start:stop:index.step]
-                else:
-                    if not index.step:
-                        offset = None
-                    elif index.step > 0:
-                        if start is None:
-                            delta = -head.length
-                        elif start >= 0:
-                            delta = start - head.length
-                        else:
-                            delta = max(index.start, -self.length) + tail.length
-
-                        offset = delta % index.step
-                        if offset == 0:
-                            offset = None
-                    else:
-                        if start is None:
-                            offset = index.step + (head.length - 1) % (-index.step)
-                        elif start >= 0:
-                            offset = index.step + min(start, head.length - 1) % (-index.step)
-                        else:
-                            offset = index.step + (start + head.length) % (-index.step)
-
-                    if not tail[offset:stop:index.step]:
-                        return head[start::index.step]
-                    else:
-                        return head[start::index.step] + tail[offset:stop:index.step]
-            else:
-                return Rope(self.data[index])
+                try:
+                    return Rope(self.data[index])
+                except IndexError:
+                    raise IndexError
+        else:
+            raise TypeError("Unsupported indexing")
 
     def __repr__(self):
         if self.left and self.right:
@@ -199,9 +131,40 @@ class Rope(object):
 
     def next(self):
         return self.__next__()
+    
+    def split(self, index):
+        if self is None:
+            return None, None
 
-    def reduce(self):
+        if index == 0:
+            return None, self
+
+        if index >= len(self):
+            return self, None
+
+        if index < len(self.left):
+            left, right = self.left.split(index)
+            new_node = self.right
+            new_node.left = left
+            new_node.right = self.right
+            new_node.weight = self.weight - len(left)
+            self.right = None
+            self.weight = len(self.left)
+            return new_node, self
+        elif index == len(self.left):
+            return self, self.right
+        else:
+            left = self.left
+            right, remainder = self.right.split(index - len(self.left) - 1)
+            self.left = None
+            self.right = remainder
+            self.weight = len(self.right)
+            return left, self
+
+    def balance(self):
+        # TODO Implement
         pass
 
     def insert(self, index, s):
+        # TODO Implement
         pass
