@@ -4,7 +4,6 @@ from typing import Union, List, Optional
 class Rope:
     def __init__(self, data: Union[str, List[str]] = '') -> None:
         # STRING BASED CONSTRUCTOR
-        MAX_LEAF_SIZE = 32
         if isinstance(data, str):
             self.left = None
             self.right = None
@@ -37,20 +36,18 @@ class Rope:
         return str(self) == str(other)
 
     def __add__(self, other: Union[Rope, str, List[str]]) -> Rope:
-        if isinstance(other, Rope):
-            r = Rope()
-            r.left = self
-            r.right = other
-            r.length = self.length + other.length
-            r.current = self
-            r.balance()
-            return r
-        else:
-            try:
-                return self.__add__(Rope(other))
-            except Exception as e:
-                e(f'Unable to construct rope using {type(other)}, supported types: str, list[str]')
-                raise
+        # If `other` is not a Rope, convert it to a Rope
+        if not isinstance(other, Rope):
+            other = Rope(other)
+        
+        new_rope = Rope()
+        new_rope.left = self
+        new_rope.right = other
+        new_rope.data = ''  # Internal nodes shouldn't hold data directly
+        new_rope.length = len(self) + len(other)  # Calculate the combined length
+        new_rope = new_rope.balance()  # Balance the new Rope
+        
+        return new_rope
 
     def __len__(self) -> int:
         if self.left is not None and self.right is not None:
@@ -121,8 +118,12 @@ class Rope:
     def split(self, index: int) -> (Rope, Rope):
         if index < 0:
             index += len(self)
-        if index < 0 or index > len(self):
+        if index < 0 or index > self.length:
             raise IndexError("Index out of bounds")
+        if index == 0:
+            return Rope(''), self
+        if index == self.length:
+            return self, Rope('')
         
         # Base case: If the current node is a leaf node
         if self.left is None and self.right is None:
@@ -145,7 +146,7 @@ class Rope:
         right_height = self.right._height() if self.right else 0
         return left_height - right_height
 
-    def balance(self):
+    def balance(self) -> Rope:
         bf = self.balance_factor()
         if bf > 1:  # Left heavy
             if self.left and self.left.balance_factor() < 0:
@@ -189,12 +190,33 @@ class Rope:
         right_height = self.right._height() + 1 if self.right else 0
         return max(left_height, right_height)
 
-    def insert(self, index, s) -> None:
-        left, right = self.split(index)
-        insertion = Rope(s)
-        combined = left + insertion + right
-        self.left = combined.left
-        self.right = combined.right
-        self.data = combined.data
-        self.length = combined.length
-        self.balance()
+    def insert(self, index, s) -> Rope:
+        new_rope = Rope(s)
+
+        if index == 0:
+            # Insert at the start of the Rope
+            combined = new_rope + self
+        elif index == self.length:
+            # Append at the end of the Rope
+            combined = self + new_rope
+        else:
+            # Split the Rope and insert the new text
+            left, right = self.split(index)
+            combined = left + new_rope + right
+        
+        return combined.balance()
+
+    def delete(self, index: int, length: int) -> Rope:
+        if index < 0 or index + length > self.length:
+            raise IndexError("Index out of bounds")
+        
+        # Split the rope at the start of the range to delete
+        left, temp = self.split(index)
+        
+        # Split the temp rope at the end of the range to delete
+        _, right = temp.split(length)
+        
+        # Combine the left and right parts, effectively deleting the middle part
+        result = left + right
+        
+        return result

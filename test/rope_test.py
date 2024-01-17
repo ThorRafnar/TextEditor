@@ -116,38 +116,55 @@ class TestRopeMethods(unittest.TestCase):
 
     def test_insert(self):
         rope = Rope("Good Viet nam")
-        rope.insert(4, " morning")
+        rope = rope.insert(4, " morning")
         self.assertEqual(str(rope), "Good morning Viet nam")
 
-    def test_performance_versus_str(self):
-        # Setup code
-        setup_code = """
-from main.rope import Rope
+    def test_back_insert(self):
+        rope = Rope("Hello, ")
+        rope = rope.insert(len(rope), "world")
+        self.assertEqual(str(rope), "Hello, world")
+    
+    def test_front_insert(self):
+        rope = Rope("world")
+        rope = rope.insert(0, "Hello, ")
+        self.assertEqual(str(rope), "Hello, world")
 
+    def test_repeated_adds(self):
+        rope = Rope()
+        for word in ["Hel", "lo,", " wo", "rld", "Hel", "lo,", " wo", "rld", "Hel", "lo,", " wo", "rld", "Hel", "lo,", " wo", "rld"]:
+            rope += word
+        self.assertEqual(str(rope), "Hello, worldHello, worldHello, worldHello, world")
+
+    def test_performance(self, insert_index=5, insert_str='abc', iterations=10, length=1000):
+        repeats = 5
+        # Setup code template
+        setup_code_template = """
+from main.rope import Rope
 import random
 import string
 
-length = 1000000  # Define the length of the large string
+length = {length}  # Define the length of the large string
 base_str = ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 rope = Rope(base_str)
-insert_str = " insert complex value :) "
+insert_str = "{insert_str}"
         """
 
-        # Code snippet for inserting into a Python string
+        # Code snippets for insertion
         base_str_test_code = """
 new_str = base_str
-for i in range(1000):  # Number of inserts
-    new_str = new_str[:50] + insert_str + new_str[50:]
+for i in range({iterations}):  # Number of inserts
+    new_str = new_str[:{insert_index}] + insert_str + new_str[{insert_index}:]
         """
 
-        # Code snippet for inserting into a Rope
         rope_test_code = """
-for i in range(1000):  # Number of inserts
-    rope.insert(50, insert_str)
+for i in range({iterations}):  # Number of inserts
+    rope = rope.insert({insert_index}, insert_str)
         """
 
-        # Number of times the whole experiment is repeated
-        repeats = 5
+        # Format the setup code and test code with specific parameters
+        setup_code = setup_code_template.format(length=length, insert_str=insert_str)
+        base_str_test_code = base_str_test_code.format(insert_index=insert_index, iterations=iterations)
+        rope_test_code = rope_test_code.format(insert_index=insert_index, iterations=iterations)
 
         # Time the base str insertions
         base_str_time = timeit.timeit(stmt=base_str_test_code, setup=setup_code, number=repeats)
@@ -155,8 +172,11 @@ for i in range(1000):  # Number of inserts
         # Time the Rope insertions
         rope_time = timeit.timeit(stmt=rope_test_code, setup=setup_code, number=repeats)
 
+        # Print the results
+        print(f"Insert Index: {insert_index}, Insert String: '{insert_str}', Iterations: {iterations}, String_length: {length}")
         print(f"Average time for base str insertions: {base_str_time / repeats} seconds")
         print(f"Average time for Rope insertions: {rope_time / repeats} seconds")
+        print("-------------------------------------------------------------")
 
 if __name__ == '__main__':
     unittest.main()
