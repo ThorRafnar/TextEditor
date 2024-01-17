@@ -25,6 +25,10 @@ class TestRopeMethods(unittest.TestCase):
     def test_init_accepts_empty_list(self):
         Rope([])
 
+    def test_empty_string(self):
+        rope = Rope('')
+        self.assertEqual(str(rope), "")
+
     def test_str_when_constructed_from_string(self):
         my_string = "Hello, world"
         self.assertEqual(str(Rope(my_string)), my_string)

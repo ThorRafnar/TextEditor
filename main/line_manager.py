@@ -18,8 +18,10 @@ class LineManager:
             current_node = current_node.next
         return line_num
 
-    def insert_line(self, text: Union[Rope, str] = '', after_line: LineNode=None):
-        new_line = LineNode(text)
+    def insert_line(self, text: Union[LineNode, Rope, str] = '', after_line: LineNode=None):
+        new_line = text
+        if not isinstance(text, LineNode):
+            new_line = LineNode(text)
         if after_line is None:  # Insert at the beginning
             new_line.next = self.head
             self.head = new_line
@@ -41,19 +43,91 @@ class LineManager:
         cursor_line = self.cursor_line
         cursor_line_index = self.cursor_line_index
 
-        if cursor_line_index < len(cursor_line.text):
+        if cursor_line_index == 0:
+            # Create a new line with the current line's content
+            new_line = LineNode(cursor_line.text)
+            # Insert the new line after the current line
+            self.insert_line(new_line, after_line=cursor_line)
+            # Clear the current line's text
+            cursor_line.text = Rope(' ')
+            # Move the cursor to the start of the new line
+            self.move_cursor(new_line, 0)
+            
+
+        elif cursor_line_index < len(cursor_line.text):
             # Split the current line at the cursor position
             left_part, right_part = cursor_line.text.split(cursor_line_index)
             cursor_line.text = left_part
-            self.insert_line(right_part, after_line=cursor_line)
-
-            # Move the cursor to the new line
-            self.move_cursor(cursor_line.next, 0)
+            new_line = LineNode(right_part)
+            self.insert_line(new_line, after_line=cursor_line)
+            # Move the cursor to the start of the new line
+            self.move_cursor(new_line, 0)
         else:
-            self.insert_line(after_line=cursor_line)
-
+            # Cursor is at the end of the line, create a new empty line below
+            new_line = LineNode('')
+            self.insert_line(new_line, after_line=cursor_line)
             # Move the cursor to the new line
-            self.move_cursor(cursor_line.next, 0)
+            self.move_cursor(new_line, 0)
+
+
+
+    
+    def handle_character(self, character):
+        # Insert character at the cursor position
+        self.cursor_line.insert_text(self.cursor_line_index, character)
+        self.cursor_line_index += 1
+
+    def try_move_right(self):
+        # Move cursor right
+        if self.cursor_line_index < self.cursor_line.text.length:
+            self.cursor_line_index += 1
+        elif self.cursor_line.next:  # Move to the start of the next line
+            self.cursor_line = self.cursor_line.next
+            self.cursor_line_index = 0
+
+    def try_move_left(self):
+        # Move cursor left
+        if self.cursor_line_index > 0:
+            self.cursor_line_index -= 1
+        elif self.cursor_line.prev:  # Move to the end of the previous line
+            self.cursor_line = self.cursor_line.prev
+            self.cursor_line_index = self.cursor_line.text.length
+
+    def try_move_down(self):
+        # Move cursor down
+        if self.cursor_line.next:
+            self.cursor_line = self.cursor_line.next
+
+    def try_move_up(self):
+        # Move cursor up
+        if self.cursor_line.prev:
+            self.cursor_line = self.cursor_line.prev
+
+    def get_pos(self) -> (int, int):
+        y = self.get_line_number(self.cursor_line)
+        x = min(self.cursor_line_index, len(self.cursor_line))
+        return y, x 
+
+    def handle_backspace(self):
+        # Handle backspace (delete character or merge lines)
+        if self.cursor_line_index > 0:
+            # Delete character at the cursor position
+            self.cursor_line.delete_text(self.cursor_line_index - 1, 1)
+            self.cursor_line_index -= 1
+        # Merge with the previous line
+        elif self.cursor_line.prev:
+            prev_line = self.cursor_line.prev
+            prev_line_length = prev_line.text.length
+            prev_line.text += self.cursor_line.text
+
+            # Update pointers to link the lines correctly
+            prev_line.next = self.cursor_line.next
+            if self.cursor_line.next:
+                self.cursor_line.next.prev = prev_line
+
+            self.delete_line(self.cursor_line)
+            self.cursor_line = prev_line
+            self.cursor_line_index = prev_line_length
 
     def delete_line(self, line: LineNode):
         if line is None:
