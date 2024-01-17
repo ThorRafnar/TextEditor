@@ -91,7 +91,7 @@ def main(stdscr):
                 # Move the cursor to the new line
                 line_manager.move_cursor(cursor_line.next, 0)
             else:
-                line_manager.insert_line(Rope(''), after_line=cursor_line)
+                line_manager.insert_line(after_line=cursor_line)
 
                 # Move the cursor to the new line
                 line_manager.move_cursor(cursor_line.next, 0)

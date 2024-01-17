@@ -1,3 +1,4 @@
+from typing import Union
 from line_node import LineNode
 from rope import Rope
 
@@ -17,7 +18,7 @@ class LineManager:
             current_node = current_node.next
         return line_num
 
-    def insert_line(self, text: Rope, after_line: LineNode=None):
+    def insert_line(self, text: Union[Rope, str] = '', after_line: LineNode=None):
         new_line = LineNode(text)
         if after_line is None:  # Insert at the beginning
             new_line.next = self.head
