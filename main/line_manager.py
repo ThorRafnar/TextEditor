@@ -36,6 +36,25 @@ class LineManager:
             if self.tail == after_line:
                 self.tail = new_line
 
+    def handle_enter(self):
+        # Handle enter (split line or create a new one)
+        cursor_line = self.cursor_line
+        cursor_line_index = self.cursor_line_index
+
+        if cursor_line_index < len(cursor_line.text):
+            # Split the current line at the cursor position
+            left_part, right_part = cursor_line.text.split(cursor_line_index)
+            cursor_line.text = left_part
+            self.insert_line(right_part, after_line=cursor_line)
+
+            # Move the cursor to the new line
+            self.move_cursor(cursor_line.next, 0)
+        else:
+            self.insert_line(after_line=cursor_line)
+
+            # Move the cursor to the new line
+            self.move_cursor(cursor_line.next, 0)
+
     def delete_line(self, line: LineNode):
         if line is None:
             return

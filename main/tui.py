@@ -78,23 +78,7 @@ def main(stdscr):
                 line_manager.cursor_line_index = prev_line_length
 
         elif key == curses.KEY_ENTER or key == 10:
-            # Handle enter (split line or create a new one)
-            cursor_line = line_manager.cursor_line
-            cursor_line_index = line_manager.cursor_line_index
-
-            if cursor_line_index < len(cursor_line.text):
-                # Split the current line at the cursor position
-                left_part, right_part = cursor_line.text.split(cursor_line_index)
-                cursor_line.text = left_part
-                line_manager.insert_line(right_part, after_line=cursor_line)
-
-                # Move the cursor to the new line
-                line_manager.move_cursor(cursor_line.next, 0)
-            else:
-                line_manager.insert_line(after_line=cursor_line)
-
-                # Move the cursor to the new line
-                line_manager.move_cursor(cursor_line.next, 0)
+            line_manager.handle_enter()
 
 
         elif key >= 32 and key <= 126:  # Printable characters
