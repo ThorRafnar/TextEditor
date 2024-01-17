@@ -1,15 +1,34 @@
 from typing import Union
+from .file_handler import FileHandler
 from .line_node import LineNode
 from .rope import Rope
 
 
 class LineManager:
-    def __init__(self):
+    def __init__(self, file_path):
+        self.file_handler = FileHandler(file_path)
         self.head = None  # Start of the lines
         self.tail = None  # End of the lines
         self.cursor_line = None  # Line where the cursor is currently located
         self.cursor_line_index = 0  # The line number of the cursor_line
-    
+        self.load_content()
+
+    def load_content(self):
+        """Loads the content from the file into the linked list."""
+        self.head = self.file_handler.read_file()
+        # Set cursor_line and tail
+        self.cursor_line = self.head
+        temp_node = self.head
+        while temp_node:
+            self.tail = temp_node
+            temp_node = temp_node.next
+
+    def save_content(self):
+        """Saves the content from the linked list back to the file."""
+        self.file_handler.write_file(self.head)
+
+
+
     def get_line_number(self, line_node):
         line_num = 0
         current_node = self.head

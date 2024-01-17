@@ -1,8 +1,8 @@
 import curses
 
-from line_manager import LineManager
-from line_node import LineNode
-from rope import Rope
+from .line_manager import LineManager
+from .line_node import LineNode
+from .rope import Rope
 
 def main(stdscr):
     # Initialization
@@ -11,8 +11,7 @@ def main(stdscr):
     stdscr.clear()  # Clear the screen
 
     # Initialize LineManager
-    line_manager = LineManager()
-    line_manager.insert_line("") # Insert a sample line
+    line_manager = LineManager(file_path='main/testFile.txt')
     line_manager.move_cursor(line_manager.head, 0)  # Set cursor at the beginning
     # TODO Implement horizontal and vertical scrolling
     # Main loop
