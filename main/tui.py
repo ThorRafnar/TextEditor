@@ -14,7 +14,7 @@ def main(stdscr):
     line_manager = LineManager()
     line_manager.insert_line("") # Insert a sample line
     line_manager.move_cursor(line_manager.head, 0)  # Set cursor at the beginning
-
+    # TODO Implement horizontal and vertical scrolling
     # Main loop
     while True:
         # Inside the main loop
