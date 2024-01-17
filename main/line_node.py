@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Union, List, Optional
 
-from rope import Rope
+from .rope import Rope
 
 class LineNode:
     def __init__(self, text: Union[Rope, str, List[str]]=''):

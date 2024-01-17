@@ -1,6 +1,6 @@
 from typing import Union
-from line_node import LineNode
-from rope import Rope
+from .line_node import LineNode
+from .rope import Rope
 
 
 class LineManager:
