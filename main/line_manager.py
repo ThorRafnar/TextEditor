@@ -36,7 +36,20 @@ class LineManager:
                 self.tail = new_line
 
     def delete_line(self, line: LineNode):
-        pass
+        if line is None:
+            return
+
+        prev_line = line.prev
+        next_line = line.next
+
+        if prev_line is not None:
+            prev_line.next = next_line
+        if next_line is not None:
+            next_line.prev = prev_line
+
+        # If the line being deleted is the cursor line, move the cursor to the next line
+        if line == self.cursor_line:
+            self.move_cursor(next_line, 0)
 
     def move_cursor(self, new_line: LineNode, new_index: int):
         self.cursor_line = new_line

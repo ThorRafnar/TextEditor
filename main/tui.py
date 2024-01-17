@@ -1,6 +1,8 @@
 import curses
 
 from line_manager import LineManager
+from line_node import LineNode
+from rope import Rope
 
 def main(stdscr):
     # Initialization
@@ -10,7 +12,9 @@ def main(stdscr):
 
     # Initialize LineManager
     line_manager = LineManager()
-    line_manager.insert_line("")  # Insert a sample line
+    line_manager.insert_line("This") # Insert a sample line
+    line_manager.insert_line("is sample")
+    line_manager.insert_line("data")
     line_manager.move_cursor(line_manager.head, 0)  # Set cursor at the beginning
 
     # Main loop
@@ -58,21 +62,40 @@ def main(stdscr):
                 # Delete character at the cursor position
                 line_manager.cursor_line.delete_text(line_manager.cursor_line_index - 1, 1)
                 line_manager.cursor_line_index -= 1
+            # Merge with the previous line
             elif line_manager.cursor_line.prev:
-                # Merge with the previous line
                 prev_line = line_manager.cursor_line.prev
                 prev_line_length = prev_line.text.length
                 prev_line.text += line_manager.cursor_line.text
+
+                # Update pointers to link the lines correctly
+                prev_line.next = line_manager.cursor_line.next
+                if line_manager.cursor_line.next:
+                    line_manager.cursor_line.next.prev = prev_line
+
                 line_manager.delete_line(line_manager.cursor_line)
                 line_manager.cursor_line = prev_line
                 line_manager.cursor_line_index = prev_line_length
 
         elif key == curses.KEY_ENTER or key == 10:
             # Handle enter (split line or create a new one)
-            new_line_text = line_manager.cursor_line.text[line_manager.cursor_line_index:]
-            line_manager.cursor_line.text = line_manager.cursor_line.text[:line_manager.cursor_line_index]
-            line_manager.insert_line(new_line_text, after_line=line_manager.cursor_line)
-            line_manager.move_cursor(line_manager.cursor_line.next, 0)
+            cursor_line = line_manager.cursor_line
+            cursor_line_index = line_manager.cursor_line_index
+
+            if cursor_line_index < len(cursor_line.text):
+                # Split the current line at the cursor position
+                left_part, right_part = cursor_line.text.split(cursor_line_index)
+                cursor_line.text = left_part
+                line_manager.insert_line(right_part, after_line=cursor_line)
+
+                # Move the cursor to the new line
+                line_manager.move_cursor(cursor_line.next, 0)
+            else:
+                line_manager.insert_line(Rope(''), after_line=cursor_line)
+
+                # Move the cursor to the new line
+                line_manager.move_cursor(cursor_line.next, 0)
+
 
         elif key >= 32 and key <= 126:  # Printable characters
             # Insert character at the cursor position
