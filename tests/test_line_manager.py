@@ -77,7 +77,7 @@ class TestLineManager(unittest.TestCase):
         self.line_manager.handle_enter()
         self.line_manager.try_move_up()
         self.line_manager.insert_text("Test")
-        print(self.line_manager)
+        self.assertEqual(str(self.line_manager), str(['', '', 'Test', 'Line before enter']))
 
     def test_try_move_up(self):
         # Create a situation where the cursor is on the second line

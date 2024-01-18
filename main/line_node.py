@@ -25,7 +25,8 @@ class LineNode:
             self.text = Rope(text)
 
     def __bool__(self) -> bool: # Needed to overload bool to return True if the object exists to handle prev and next when navigating
-        return True
+         # Consider a LineNode to be truthy if the node itself exists, regardless of its content
+        return True if self is not None else False
 
     def insert_text(self, index: int, text: Union[Rope, str, List[str]]):
         self.text = self.text.insert(index, text)
