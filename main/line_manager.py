@@ -162,6 +162,10 @@ class LineManager:
         return y, x 
 
     def handle_backspace(self):
+        # Handle moving to a shorter line and pressing backspace.
+        # Index is not updated on vertical movement for UX reason
+        if self.cursor_line_index > len(self.cursor_line):
+            self.cursor_line_index = len(self.cursor_line)
         # Handle backspace (delete character or merge lines)
         if self.cursor_line_index > 0:
             # Delete character at the cursor position
