@@ -116,6 +116,10 @@ class LineManager:
             self.handle_character(char)
         
     def handle_character(self, character):
+        # Handle moving to a shorter line and writing.
+        # Index is not updated on vertical movement for UX reason
+        if self.cursor_line_index > len(self.cursor_line):
+            self.cursor_line_index = len(self.cursor_line)
         # Insert character at the cursor position
         self.cursor_line.insert_text(self.cursor_line_index, character)
         self.cursor_line_index += 1
