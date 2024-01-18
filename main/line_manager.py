@@ -126,14 +126,18 @@ class LineManager:
 
     def try_move_right(self):
         # Move cursor right
-        if self.cursor_line_index < self.cursor_line.text.length:
+        if self.cursor_line_index < len(self.cursor_line):
             self.cursor_line_index += 1
         elif self.cursor_line.next is not None:  # Move to the start of the next line
             self.cursor_line = self.cursor_line.next
             self.cursor_line_index = 0
+        else:
+            self.cursor_line_index = len(self.cursor_line)
 
     def try_move_left(self):
         # Move cursor left
+        if self.cursor_line_index > len(self.cursor_line):
+            self.cursor_line_index = len(self.cursor_line)
         if self.cursor_line_index > 0:
             self.cursor_line_index -= 1
         elif self.cursor_line.prev is not None:  # Move to the end of the previous line
