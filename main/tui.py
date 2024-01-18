@@ -7,13 +7,16 @@ from .rope import Rope
 def main(stdscr):
     SIDE_NUMBER_WIDTH = 4
     SHOULD_ZERO_INDEX = False
+    CTRL_Q = ord('q') - 96  # Ctrl+Q
+    CTRL_S = ord('s') - 96  # Ctrl+S
+    ESC = 27
     # Initialization
     curses.curs_set(1)  # Make the cursor visible
     stdscr.nodelay(False)  # Make getch() wait for the user to press a key
     stdscr.clear()  # Clear the screen
 
     # Initialize LineManager
-    line_manager = LineManager()
+    line_manager = LineManager(file_path='main/testFile.txt')
     line_manager.move_cursor(line_manager.head, 0)  # Set cursor at the beginning
     # TODO Implement horizontal and vertical scrolling
     # Main loop
@@ -48,7 +51,22 @@ def main(stdscr):
 
         elif key >= 32 and key <= 126:  # Printable characters
             line_manager.handle_character(chr(key))
-            
+
+        elif key == CTRL_S:
+            # Handle save content to file
+            line_manager.save_content()
+            stdscr.addstr(len(line_manager) + 2, 0, "Content saved!")
+        
+        elif key == CTRL_Q:
+            # Handle quit
+            line_manager.save_content()  # Optionally save before quitting
+            break  # Break out of the loop to end the program
+
+        elif key == ESC:
+            # Handle quit
+            line_manager.save_content()  # Optionally save before quitting
+            break  # Break out of the loop to end the program
+                    
 
 
 # Start the curses application
