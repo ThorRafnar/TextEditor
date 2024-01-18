@@ -139,7 +139,7 @@ class TestRopeMethods(unittest.TestCase):
             rope += word
         self.assertEqual(str(rope), "Hello, worldHello, worldHello, worldHello, world")
 
-    def test_performance(self, insert_index=5, insert_str='abc', iterations=10, length=1000):
+    def test_performance(self, insert_index=5, insert_str='abc', iterations=100, length=100):
         repeats = 5
         # Setup code template
         setup_code_template = """
@@ -167,9 +167,9 @@ for i in range({iterations}):  # Number of inserts
 
         # Format the setup code and test code with specific parameters
         setup_code = setup_code_template.format(length=length, insert_str=insert_str)
-        base_str_test_code = base_str_test_code.format(insert_index=insert_index, iterations=iterations)
+        
         rope_test_code = rope_test_code.format(insert_index=insert_index, iterations=iterations)
-
+        base_str_test_code = base_str_test_code.format(insert_index=insert_index, iterations=iterations)
         # Time the base str insertions
         base_str_time = timeit.timeit(stmt=base_str_test_code, setup=setup_code, number=repeats)
 
