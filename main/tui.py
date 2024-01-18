@@ -5,6 +5,8 @@ from .line_node import LineNode
 from .rope import Rope
 
 def main(stdscr):
+    SIDE_NUMBER_WIDTH = 4
+    SHOULD_ZERO_INDEX = False
     # Initialization
     curses.curs_set(1)  # Make the cursor visible
     stdscr.nodelay(False)  # Make getch() wait for the user to press a key
@@ -19,11 +21,12 @@ def main(stdscr):
         # Inside the main loop
         stdscr.clear()
         for index, line_node in enumerate(line_manager):
-            line_number = f'{index} |'
+            i = index if SHOULD_ZERO_INDEX else index + 1
+            line_number = f'{i:<{SIDE_NUMBER_WIDTH - 1}}|'
             line_content = str(line_node.text)  # Assuming `text` is an attribute of LineNode, convert to string if necessary
             stdscr.addstr(index, 0, line_number + line_content)
         y, x = line_manager.get_pos()
-        stdscr.move(y, x + 3)  # Adjust cursor position to account for the line number width
+        stdscr.move(y, x + SIDE_NUMBER_WIDTH)  # Adjust cursor position to account for the side number width
         stdscr.refresh()
 
         # Handle input
