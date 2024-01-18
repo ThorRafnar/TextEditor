@@ -1,17 +1,26 @@
-from typing import Union
+from typing import Union, Optional
 from .file_handler import FileHandler
 from .line_node import LineNode
 from .rope import Rope
 
 
 class LineManager:
-    def __init__(self, file_path):
+    def __init__(self, file_path=""):
         self.file_handler = FileHandler(file_path)
         self.head = None  # Start of the lines
         self.tail = None  # End of the lines
         self.cursor_line = None  # Line where the cursor is currently located
         self.cursor_line_index = 0  # The line number of the cursor_line
         self.load_content()
+    
+    def __len__(self):
+        """Returns the number of lines managed by LineManager."""
+        count = 0
+        current_node = self.head
+        while current_node is not None:
+            count += 1
+            current_node = current_node.next
+        return count
 
     def load_content(self):
         """Loads the content from the file into the linked list."""
@@ -19,7 +28,7 @@ class LineManager:
         # Set cursor_line and tail
         self.cursor_line = self.head
         temp_node = self.head
-        while temp_node:
+        while temp_node is not None:
             self.tail = temp_node
             temp_node = temp_node.next
 
@@ -27,6 +36,18 @@ class LineManager:
         """Saves the content from the linked list back to the file."""
         self.file_handler.write_file(self.head)
 
+    def __iter__(self):
+        """Allows iteration over the lines managed by LineManager."""
+        current_node = self.head
+        while current_node is not None:
+            yield current_node
+            current_node = current_node.next
+
+    def __str__(self) -> str:
+        ret = []
+        for line in self:
+            ret.append(str(line))
+        return str(ret)
 
 
     def get_line_number(self, line_node):
@@ -38,23 +59,21 @@ class LineManager:
         return line_num
 
     def insert_line(self, text: Union[LineNode, Rope, str] = '', after_line: LineNode=None):
-        new_line = text
-        if not isinstance(text, LineNode):
-            new_line = LineNode(text)
+        new_line = text if isinstance(text, LineNode) else LineNode(text)
         if after_line is None:  # Insert at the beginning
             new_line.next = self.head
+            if self.head:  # Ensure the old head's prev pointer is updated
+                self.head.prev = new_line
             self.head = new_line
-            if new_line.next:
-                new_line.next.prev = new_line
-            if self.tail is None:
+            if not self.tail:  # If the list was empty, new_line is now also the tail
                 self.tail = new_line
         else:  # Insert after the specified line
             new_line.next = after_line.next
             new_line.prev = after_line
-            after_line.next = new_line
-            if new_line.next:
+            if new_line.next:  # Update the prev pointer of the next node
                 new_line.next.prev = new_line
-            if self.tail == after_line:
+            after_line.next = new_line
+            if not self.tail or self.tail == after_line:  # Update tail if needed
                 self.tail = new_line
 
     def handle_enter(self):
@@ -68,7 +87,8 @@ class LineManager:
             # Insert the new line after the current line
             self.insert_line(new_line, after_line=cursor_line)
             # Clear the current line's text
-            cursor_line.text = Rope(' ')
+            cursor_line.text = Rope(" ")
+            cursor_line.delete_text(0, 1)
             # Move the cursor to the start of the new line
             self.move_cursor(new_line, 0)
             
@@ -89,8 +109,12 @@ class LineManager:
             self.move_cursor(new_line, 0)
 
 
-
-    
+    def insert_text(self, text: Union[str, Rope, list[str]], index: Optional[int]=None):
+        if index:
+            self.cursor_line_index = index
+        for char in text:
+            self.handle_character(char)
+        
     def handle_character(self, character):
         # Insert character at the cursor position
         self.cursor_line.insert_text(self.cursor_line_index, character)
@@ -124,7 +148,9 @@ class LineManager:
 
     def get_pos(self) -> (int, int):
         y = self.get_line_number(self.cursor_line)
-        x = min(self.cursor_line_index, len(self.cursor_line))
+        x = 0
+        if self.cursor_line is not None:
+            x = min(self.cursor_line_index, len(self.cursor_line))
         return y, x 
 
     def handle_backspace(self):

@@ -1,5 +1,5 @@
 import curses
-
+import time
 from .line_manager import LineManager
 from .line_node import LineNode
 from .rope import Rope
@@ -11,22 +11,21 @@ def main(stdscr):
     stdscr.clear()  # Clear the screen
 
     # Initialize LineManager
-    line_manager = LineManager(file_path='main/testFile.txt')
+    line_manager = LineManager()
     line_manager.move_cursor(line_manager.head, 0)  # Set cursor at the beginning
     # TODO Implement horizontal and vertical scrolling
     # Main loop
     while True:
         # Inside the main loop
         stdscr.clear()
-        current_line = line_manager.head
-        line_num = 0
-        while current_line:
-            stdscr.addstr(line_num, 0, str(current_line.text))  # Make sure text is converted to string properly
-            current_line = current_line.next
-            line_num += 1
+        for index, line_node in enumerate(line_manager):
+            line_number = f'{index} |'
+            line_content = str(line_node.text)  # Assuming `text` is an attribute of LineNode, convert to string if necessary
+            stdscr.addstr(index, 0, line_number + line_content)
         y, x = line_manager.get_pos()
-        stdscr.move(y, x)
+        stdscr.move(y, x + 3)  # Adjust cursor position to account for the line number width
         stdscr.refresh()
+
         # Handle input
         key = stdscr.getch()
         if key == curses.KEY_UP:

@@ -15,11 +15,17 @@ class LineNode:
     def __len__(self):
         return len(self.text)
     
+    def __str__(self):
+        return str(self.text)
+    
     def set_text(self, text: Union[Rope, str, List[str]]) -> None:
         if isinstance(text, Rope):
             self.text = text
         else:
             self.text = Rope(text)
+
+    def __bool__(self) -> bool: # Needed to overload bool to return True if the object exists to handle prev and next when navigating
+        return True
 
     def insert_text(self, index: int, text: Union[Rope, str, List[str]]):
         self.text = self.text.insert(index, text)

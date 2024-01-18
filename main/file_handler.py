@@ -22,7 +22,6 @@ class FileHandler:
                         new_node.prev = current_node
                         current_node = new_node
         except FileNotFoundError:
-            print(f"The file {self.file_path} does not exist. A new file will be created.")
             head = LineNode("")  # Create an empty node if file doesn't exist
 
         return head  # Return the head of the linked list

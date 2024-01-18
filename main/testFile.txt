@@ -1,4 +1,2 @@
-Hello, world!
-This is a text file
- 
-Some lines are empty
+
+Hello
