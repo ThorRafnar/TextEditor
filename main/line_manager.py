@@ -62,18 +62,18 @@ class LineManager:
         new_line = text if isinstance(text, LineNode) else LineNode(text)
         if after_line is None:  # Insert at the beginning
             new_line.next = self.head
-            if self.head:  # Ensure the old head's prev pointer is updated
+            if self.head is not None:  # Ensure the old head's prev pointer is updated
                 self.head.prev = new_line
             self.head = new_line
-            if not self.tail:  # If the list was empty, new_line is now also the tail
+            if self.tail is None:  # If the list was empty, new_line is now also the tail
                 self.tail = new_line
         else:  # Insert after the specified line
             new_line.next = after_line.next
             new_line.prev = after_line
-            if new_line.next:  # Update the prev pointer of the next node
+            if new_line.next is not None:  # Update the prev pointer of the next node
                 new_line.next.prev = new_line
             after_line.next = new_line
-            if not self.tail or self.tail == after_line:  # Update tail if needed
+            if self.tail is None or self.tail == after_line:  # Update tail if needed
                 self.tail = new_line
 
     def handle_enter(self):
