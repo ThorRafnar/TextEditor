@@ -124,7 +124,7 @@ class LineManager:
         # Move cursor right
         if self.cursor_line_index < self.cursor_line.text.length:
             self.cursor_line_index += 1
-        elif self.cursor_line.next:  # Move to the start of the next line
+        elif self.cursor_line.next is not None:  # Move to the start of the next line
             self.cursor_line = self.cursor_line.next
             self.cursor_line_index = 0
 
@@ -132,18 +132,18 @@ class LineManager:
         # Move cursor left
         if self.cursor_line_index > 0:
             self.cursor_line_index -= 1
-        elif self.cursor_line.prev:  # Move to the end of the previous line
+        elif self.cursor_line.prev is not None:  # Move to the end of the previous line
             self.cursor_line = self.cursor_line.prev
             self.cursor_line_index = self.cursor_line.text.length
 
     def try_move_down(self):
         # Move cursor down
-        if self.cursor_line.next:
+        if self.cursor_line.next is not None:
             self.cursor_line = self.cursor_line.next
 
     def try_move_up(self):
         # Move cursor up
-        if self.cursor_line.prev:
+        if self.cursor_line.prev is not None:
             self.cursor_line = self.cursor_line.prev
 
     def get_pos(self) -> (int, int):
@@ -160,14 +160,14 @@ class LineManager:
             self.cursor_line.delete_text(self.cursor_line_index - 1, 1)
             self.cursor_line_index -= 1
         # Merge with the previous line
-        elif self.cursor_line.prev:
+        elif self.cursor_line.prev is not None:
             prev_line = self.cursor_line.prev
             prev_line_length = prev_line.text.length
             prev_line.text += self.cursor_line.text
 
             # Update pointers to link the lines correctly
             prev_line.next = self.cursor_line.next
-            if self.cursor_line.next:
+            if self.cursor_line.next is not None:
                 self.cursor_line.next.prev = prev_line
 
             self.delete_line(self.cursor_line)

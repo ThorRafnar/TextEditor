@@ -24,9 +24,6 @@ class LineNode:
         else:
             self.text = Rope(text)
 
-    def __bool__(self) -> bool: # Needed to overload bool to return True if the object exists to handle prev and next when navigating
-        return True
-
     def insert_text(self, index: int, text: Union[Rope, str, List[str]]):
         self.text = self.text.insert(index, text)
 
