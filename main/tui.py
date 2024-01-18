@@ -1,5 +1,5 @@
 import curses
-import time
+import sys
 from .line_manager import LineManager
 from .line_node import LineNode
 from .rope import Rope
@@ -10,13 +10,44 @@ def main(stdscr):
     CTRL_Q = ord('q') - 96  # Ctrl+Q
     CTRL_S = ord('s') - 96  # Ctrl+S
     ESC = 27
+    
+
     # Initialization
     curses.curs_set(1)  # Make the cursor visible
     stdscr.nodelay(False)  # Make getch() wait for the user to press a key
     stdscr.clear()  # Clear the screen
 
+    filename = sys.argv[1] if len(sys.argv) > 1 else ""
+    # If no filename was provided as a command-line argument, prompt the user for a filename
+    if not filename:
+        # Clear the screen and prompt for filename
+        stdscr.clear()
+        stdscr.addstr(0, 0, "Please enter the filename: ")
+        stdscr.refresh()
+        
+        # Enable echoing of characters
+        curses.echo()
+        while True:
+            char = stdscr.getch(1, len(filename))  # Get character at position (1, len of current input)
+            if char == 10:  # Enter key (newline) pressed, end input
+                break
+            elif char == 27:  # ESC key pressed, cancel input
+                filename = ""
+                break
+            elif char == curses.KEY_BACKSPACE or char == 127:  # Handle backspace
+                filename = filename[:-1]
+                stdscr.addstr(1, 0, " " * (len(filename) + 1))  # Clear line
+                stdscr.addstr(1, 0, filename)  # Redraw current filename
+            else:
+                # Append character to filename and display
+                filename += chr(char)
+            stdscr.refresh()
+
+        # Disable echoing of characters
+        curses.noecho()
+
     # Initialize LineManager
-    line_manager = LineManager(file_path='main/testFile.txt')
+    line_manager = LineManager(file_path=filename)
     line_manager.move_cursor(line_manager.head, 0)  # Set cursor at the beginning
     # TODO Implement horizontal and vertical scrolling
     # Main loop
